@@ -1,0 +1,63 @@
+/********************************
+  Program to detect the water level of a plant and
+  print recommendation to LCV screen
+ ********************************/
+
+//libraries
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include "Adafruit_seesaw.h"
+
+//configs
+Adafruit_seesaw ss;
+LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+//setup
+void setup() {
+
+  if (!ss.begin(0x36)) {
+    Serial.println("ERROR! seesaw not found");
+    while (1);
+  } else {
+    Serial.print("seesaw started! version: ");
+    Serial.println(ss.getVersion(), HEX);
+  }
+  lcd.init();  //initialize the lcd
+  lcd.backlight();  //open the backlight
+}
+//run loop to get temperature and print water level
+
+void loop()
+{
+  float tempC = ss.getTemp(); //get the temp
+  float tempF = 1.8 * tempC + 32.0; //conver to F
+  uint16_t capread = ss.touchRead(0); //read in the moisture level
+  
+  delay(5000);
+  lcd.setCursor(1, 0); // set the cursor to column 3, line 0
+  lcd.print("Temp: ");
+  lcd.print(tempF);
+  lcd.print(" F");
+
+  lcd.setCursor(1, 1); // set the cursor to column 2, line 1
+  lcd.print("Water Lvl:");
+
+  //condition statement to check the water level 
+  //and print reco
+  if (capread >= 1000) {
+    lcd.print("V-Hi");
+  }
+  else if (capread >= 750 && capread < 1000) {
+    lcd.print("High");
+  }
+  else if (capread >= 580 && capread < 750) {
+    lcd.print("Med");
+  }
+  else if (capread < 580) {
+    lcd.print("Low");
+  }
+  else {
+    lcd.print("Err");
+  }
+}
+/************************************************************/
