@@ -56,7 +56,7 @@ while True:
     if not TO_MOVE:
         # Is it time to move the mouse?
         if now >= LAST_MOVE_TIME + MOVE_OFF_DURATION:
-            mouse.move(x=1)
+            mouse.move(x=0.5)
             TO_MOVE = True
 
             LAST_MOVE_TIME = now
