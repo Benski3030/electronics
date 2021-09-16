@@ -47,7 +47,7 @@ for pxl in num_pixels:
     neokey.pixels[pxl] = 0x0
     time.sleep(0.25)
 for pxl in num_pixels:
-    neokey.pixels[pxl] = 0xFF0000
+    neokey.pixels[pxl] = 0x00B0FF
 # run circuit loop
 while True:
     # multitask the mouse movement
@@ -70,60 +70,60 @@ while True:
     if neokey[0] and not key_0_state:
         print("Button A State 1")
         # turn on NeoPixel.
-        neokey.pixels[0] = 0x00B0FF
+        neokey.pixels[0] = 0xFF0000
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.M)
+        keyboard.send(Keycode.ALT, Keycode.F4)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_0_state = True
     elif neokey[0] and key_0_state:
         print("Button A State 2")
         # turn on NeoPixel.
-        neokey.pixels[0] = 0xFF0000
+        neokey.pixels[0] = 0x00B0FF
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.M)
+        keyboard.send(Keycode.ALT, Keycode.F4)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_0_state = False
 
     #  if 2nd neokey is pressed...
     if neokey[1] and not key_1_state:
         print("Button B State 1")
         # turn on NeoPixel.
-        neokey.pixels[1] = 0x00B0FF
+        neokey.pixels[1] = 0xFF0000
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.O)
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.B)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_1_state = True
     elif neokey[1] and key_1_state:
         print("Button B State 2")
         # turn on NeoPixel.
-        neokey.pixels[1] = 0xFF0000
+        neokey.pixels[1] = 0x00B0FF
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.O)
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.B)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_1_state = False
 
      #  if 3rd neokey is pressed...
     if neokey[2] and not key_2_state:
         print("Button C State 1")
         # turn on NeoPixel.
-        neokey.pixels[2] = 0x00B0FF
+        neokey.pixels[2] = 0xFF0000
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.B)
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.O)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_2_state = True
     elif neokey[2] and key_2_state:
         print("Button C State 2")
         # turn on NeoPixel.
-        neokey.pixels[2] = 0xFF0000
+        neokey.pixels[2] = 0x00B0FF
         # raise hand
-        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.B)
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.O)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_2_state = False
 
     #  if 4th neokey is pressed...
@@ -131,21 +131,19 @@ while True:
         print("Button D State 1")
         print(key_3_state)
         # turn on NeoPixel.
-        neokey.pixels[3] = 0x00B0FF
-        # raise hand
-        keyboard.send(Keycode.CONTROL , Keycode.PERIOD, Keycode.K)
+        neokey.pixels[3] = 0xFF0000
+        # ABORT
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.M)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_3_state = True
     elif neokey[3] and key_3_state:
         print("Button D State 2")
         print(key_3_state)
         # turn on NeoPixel.
-        neokey.pixels[3] = 0xFF0000
-        # raise hand
-        keyboard.send(Keycode.CONTROL , Keycode.PERIOD, Keycode.K)
+        neokey.pixels[3] = 0x00B0FF
+        # ABORT
+        keyboard.send(Keycode.CONTROL, Keycode.SHIFT, Keycode.M)
         # update key state
-        time.sleep(0.5)
+        time.sleep(0.25)
         key_3_state = False
-
-
