@@ -27,7 +27,7 @@ Alternatively, step 3 could also happen on the pi itself, but it takes longer du
     sudo apt-get install exfat-utils
     ```
 
-3. create a mount point in the `/mtn` folder such as
+3. create a mount point in the `/mnt` folder such as
 
     `sudo mkdir /mnt/backup`
 
@@ -73,3 +73,6 @@ And then check you can see your files and create a new one:
 `sudo pishrink.sh -z myimg.img`
 
 This process will also take several minutes but, when it is done, you will end up with a reasonably sized image file called myimg.img.gz. You can copy this file to your PC, upload it to the cloud or send it to a friend.  
+
+6. Eject your usb drive with
+    `sudo umount /mnt/backup` 
