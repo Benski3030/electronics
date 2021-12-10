@@ -14,7 +14,7 @@ Alternatively, step 3 could also happen on the pi itself, but it takes longer du
 
 ### Mount a USB
 
-1. Start by updating your system with\
+1. Start by updating your system with
     ```
     sudo apt update
     sudo apt upgrade
