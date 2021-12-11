@@ -39,6 +39,10 @@ Alternatively, step 3 could also happen on the pi itself, but it takes longer du
 
     `sudo mount /dev/sda1 /mnt/backup -o uid=pi,gid=pi`
 
+    or if it's exfat
+
+    `sudo mount -t exfat /dev/sdb1 /mnt/backup`
+
 6. The uid and gid options allow pi to read and write files on the USB key
 And then check you can see your files and create a new one:
 

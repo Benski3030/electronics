@@ -1,0 +1,16 @@
+#!/bin/bash
+sudo mkdir /mnt/backup
+sudo mount /dev/sda1 /mnt/backup -o uid=pi,gid=pi 
+echo "USB drive mounted successfully"
+
+sudo wget https://raw.githubusercontent.com/Drewsif/PiShrink/master/pishrink.sh
+sudo chmod +x pishrink.sh
+sudo mv pishrink.sh /usr/local/bin
+
+echo "[INFO] creating backup image"
+sudo dd if=/dev/mmcblk0 of=/mnt/backup/myimg.img bs=1M
+echo "[SUCCESS] image created"
+
+echo "[INFO] removing device"
+sudo umount /mnt/backup
+echo "[SUCCESS] backup completed"
