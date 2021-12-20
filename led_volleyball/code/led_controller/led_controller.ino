@@ -1,100 +1,102 @@
+/* 
+Led Volleyball 
+Creat and IR controlled LED Neopixel strip
+Benjamin Harder 12/20/221
+*/
 
-// NEO pixel strip controller
 #include <Adafruit_NeoPixel.h>
-#include <IRLibAll.h>
+#include <Arduino.h>
+#include "PinDefinitionsAndMore.h"
+#include <IRremote.hpp>
 
-
+#define DECODE_NEC
 #define RECV_PIN 2
 #define LED_PIN 6 // LED on pin 6
 #define LED_COUNT 144 //LED count
 
-// Globals
-IRrecv myReceiver(RECV_PIN); // Receiver on pin 2
-IRdecode myDecoder; // Decoder object
-
 // Declare neopixel strip object
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-
+// device setup
 void setup() {
-  myReceiver.enableIRIn(); // Start the receiver
-  strip.begin();
+  strip.begin(); // start leds
   strip.show(); // Initialize all pixels to 'off'
+  Serial.begin(115200); // for debugging
+  // Just to know which program is running on my Arduino
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK, USE_DEFAULT_FEEDBACK_LED_PIN);
+  Serial.print(F("Ready to receive IR signals of protocols: "));
+  printActiveIRProtocols(&Serial);
+  Serial.print(F("at pin "));
+  Serial.println(IR_RECEIVE_PIN);
 }
 
+// loop when running
 void loop() {
-  if (myReceiver.getResults()) {
-    myDecoder.decode();
-    if (myDecoder.protocolNum == NEC) {
-      switch (myDecoder.value) {
-        case 0xFD08F7:  //Volume Down
-          colorWipe(strip.Color(255,   0,   0), 50); //Red
-          break;
-        case 0xFD8877:  //Play/Pause
-          colorWipe(strip.Color(  0, 255,   0), 50);
-          break;
-        case 0xFD48B7:  //Volume Up
-          colorWipe(strip.Color(  0,   0, 255), 50);
-          break;
-        case 0xFD28D7:  //Volume Up
-          theaterChase(strip.Color(127, 127, 127), 50);
-          break;
-        case 0xFDA857:  //Volume Up
-          rainbow(10);
-          break;
-        case 0xFD6897:  //Volume Up
-          theaterChaseRainbow(500);
-          break;
+  if (IrReceiver.decode()) {
+
+    // Print a short summary of received data
+    IrReceiver.printIRResultShort(&Serial);
+    if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
+      // We have an unknown protocol here, print more info
+      IrReceiver.printIRResultRawFormatted(&Serial, true);
+    }
+    Serial.println();
+    IrReceiver.resume(); // Enable receiving of the next value
+
+    // inner loop to run LED commands
+    if (IrReceiver.decodedIRData.command == 0x10) {
+      colorWipe(strip.Color(255, 0, 0), 10); //Red
+    } else if (IrReceiver.decodedIRData.command == 0x11) {
+      colorWipe(strip.Color(0, 255, 0), 10); // Green
+    } else if (IrReceiver.decodedIRData.command == 0x12) {
+      colorWipe(strip.Color(0, 0, 255), 10); //Blue
+    } else if (IrReceiver.decodedIRData.command == 0x13) {
+      colorWipe(strip.Color(128, 0, 128), 10); //Purple
+    } else if (IrReceiver.decodedIRData.command == 0x14) {
+      colorWipe(strip.Color(255, 255, 0), 10); //Yellow
+    } else if (IrReceiver.decodedIRData.command == 0x15) {
+      colorWipe(strip.Color(220, 220, 220), 10); //White
+    } else if (IrReceiver.decodedIRData.command == 0x16) {
+      colorWipe(strip.Color(255, 69, 0), 10); //Orange
+    } else if (IrReceiver.decodedIRData.command == 0x18) {
+      rainbow(10);
+    } else if (IrReceiver.decodedIRData.command == 0x1A) {
+      theaterChase(strip.Color(  0,   0, 127), 50); // Blue, half brightness
+    }
+  }
+}
+
+
+// led effect functions
+
+// one directional color wipe
+void colorWipe(uint32_t color, int wait) {
+  for (int i = 0; i < strip.numPixels(); i++) { 
+    strip.setPixelColor(i, color);         
+    strip.show();                          
+    delay(wait);                           
+  }
+}
+
+// one color theater chase
+void theaterChase(uint32_t color, int wait) {
+  for (int a = 0; a < 3000000; a++) { 
+    for (int b = 0; b < 3; b++) { 
+      strip.clear();         
+      for (int c = b; c < strip.numPixels(); c += 3) {
+        strip.setPixelColor(c, color); 
       }
       strip.show();
-      myReceiver.enableIRIn(); //Restart the receiver
+      delay(wait);  
     }
   }
 }
 
-
-void colorWipe(uint32_t color, int wait) {
-  for (int i = 0; i < strip.numPixels(); i++) { // For each pixel in strip...
-    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
-    strip.show();                          //  Update strip to match
-    delay(wait);                           //  Pause for a moment
-  }
-}
-
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait) {
-  for (int a = 0; a < 10; a++) { // Repeat 10 times...
-    for (int b = 0; b < 3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in steps of 3...
-      for (int c = b; c < strip.numPixels(); c += 3) {
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      strip.show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
-    }
-  }
-}
-
-// Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
+// rainbow fade in and out between colors
 void rainbow(int wait) {
-  // Hue of first pixel runs 5 complete loops through the color wheel.
-  // Color wheel has a range of 65536 but it's OK if we roll over, so
-  // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
-  // means we'll make 5*65536/256 = 1280 passes through this outer loop:
   for (long firstPixelHue = 0; firstPixelHue < 5 * 65536; firstPixelHue += 256) {
     for (int i = 0; i < strip.numPixels(); i++) { // For each pixel in strip...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
       int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
-      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through strip.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
       strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
     }
     strip.show(); // Update strip with new contents
@@ -102,24 +104,20 @@ void rainbow(int wait) {
   }
 }
 
-// Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
+// theater chase, but with rainbow colors
 void theaterChaseRainbow(int wait) {
-  int firstPixelHue = 0;     // First pixel starts at red (hue 0)
-  for (int a = 0; a < 30; a++) { // Repeat 30 times...
-    for (int b = 0; b < 3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in increments of 3...
+  int firstPixelHue = 0;    
+  for (int a = 0; a < 3000000; a++) { 
+    for (int b = 0; b < 3; b++) { 
+      strip.clear();         
       for (int c = b; c < strip.numPixels(); c += 3) {
-        // hue of pixel 'c' is offset by an amount to make one full
-        // revolution of the color wheel (range 65536) along the length
-        // of the strip (strip.numPixels() steps):
         int      hue   = firstPixelHue + c * 65536L / strip.numPixels();
-        uint32_t color = strip.gamma32(strip.ColorHSV(hue)); // hue -> RGB
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+        uint32_t color = strip.gamma32(strip.ColorHSV(hue)); 
+        strip.setPixelColor(c, color); 
       }
-      strip.show();                // Update strip with new contents
-      delay(wait);                 // Pause for a moment
-      firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
+      strip.show();                
+      delay(wait);                 
+      firstPixelHue += 65536 / 90; 
     }
   }
 }
