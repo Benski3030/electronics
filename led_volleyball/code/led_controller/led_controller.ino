@@ -59,10 +59,14 @@ void loop() {
     } else if (IrReceiver.decodedIRData.command == 0x16) {
       colorWipe(strip.Color(255, 69, 0), 10); //Orange
     } else if (IrReceiver.decodedIRData.command == 0x18) {
-      rainbow(10);
+      rainbow(10); // rainbow fade in/ou
+    } else if (IrReceiver.decodedIRData.command == 0x19) {
+      theaterChaseRainbow(50); // rainbow theater chase
     } else if (IrReceiver.decodedIRData.command == 0x1A) {
       theaterChase(strip.Color(  0,   0, 127), 50); // Blue, half brightness
-    }
+      } else if (IrReceiver.decodedIRData.command == 0xC) {
+      colorWipe(strip.Color(0, 0, 0), 2); // clear out all colors 
+    } 
   }
 }
 
