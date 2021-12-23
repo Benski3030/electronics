@@ -9,10 +9,15 @@ The LEDs can be controlled with an IR remote and receiver pair.
 ### Materials
 
 [Arduino Nano] (https://store-usa.arduino.cc/products/arduino-nano?selectedStore=us)
+
 [LED Strip] (https://www.amazon.com/gp/product/B07CBS3CN7/ref=ppx_yo_dt_b_asin_title_o05_s00?ie=UTF8&psc=1)
+
 [IR Receiver] (https://www.amazon.com/gp/product/B0816P2545/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1)
+
 [Capacitors] (https://www.amazon.com/gp/product/B081PT78Y5/ref=ppx_yo_dt_b_asin_title_o06_s00?ie=UTF8&psc=1)
+
 [Female Power Jack Adapter] (https://www.amazon.com/gp/product/B011YKCK5M/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+
 [Thin lexan] (https://www.amazon.com/gp/product/B00520AR9C/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1)
 
 ### Code
