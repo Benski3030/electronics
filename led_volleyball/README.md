@@ -17,6 +17,7 @@ The LEDs can be controlled with an IR remote and receiver pair.
 [Capacitors](https://www.amazon.com/gp/product/B081PT78Y5/ref=ppx_yo_dt_b_asin_title_o06_s00?ie=UTF8&psc=1)
 
 [Female Power Jack Adapter](https://www.amazon.com/gp/product/B011YKCK5M/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+
 [Thin lexan](https://www.amazon.com/gp/product/B00520AR9C/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1)
 
 ### Code
