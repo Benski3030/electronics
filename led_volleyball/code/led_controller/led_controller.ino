@@ -59,11 +59,11 @@ void loop() {
     } else if (IrReceiver.decodedIRData.command == 0x16) {
       colorWipe(strip.Color(255, 69, 0), 10); //Orange
     } else if (IrReceiver.decodedIRData.command == 0x18) {
-      rainbow(10); // rainbow fade in/ou
+      rainbow(10); // rainbow fade in/out
     } else if (IrReceiver.decodedIRData.command == 0x19) {
-      theaterChaseRainbow(50); // rainbow theater chase
+      rainbowCycleslow(50); // rainbow slow
     } else if (IrReceiver.decodedIRData.command == 0x1A) {
-      theaterChase(strip.Color(  0,   0, 127), 50); // Blue, half brightness
+      rainbowCycle(50); // rainbow cycle
       } else if (IrReceiver.decodedIRData.command == 0xC) {
       colorWipe(strip.Color(0, 0, 0), 2); // clear out all colors 
     } 
@@ -82,17 +82,16 @@ void colorWipe(uint32_t color, int wait) {
   }
 }
 
-// one color theater chase
-void theaterChase(uint32_t color, int wait) {
-  for (int a = 0; a < 3000000; a++) { 
-    for (int b = 0; b < 3; b++) { 
-      strip.clear();         
-      for (int c = b; c < strip.numPixels(); c += 3) {
-        strip.setPixelColor(c, color); 
-      }
-      strip.show();
-      delay(wait);  
+// rainbow cycle
+void rainbowCycle(uint8_t wait) {
+  uint16_t r, j;
+
+  for(j=0; j<256*6; j++) { // 6 cycles of all colors on wheel
+    for(r=0; r< strip.numPixels(); r++) {
+      strip.setPixelColor(r, Wheel(((r * 256 / strip.numPixels()) + j) & 255));
     }
+    strip.show();
+    delay(wait);
   }
 }
 
@@ -108,20 +107,28 @@ void rainbow(int wait) {
   }
 }
 
-// theater chase, but with rainbow colors
-void theaterChaseRainbow(int wait) {
-  int firstPixelHue = 0;    
-  for (int a = 0; a < 3000000; a++) { 
-    for (int b = 0; b < 3; b++) { 
-      strip.clear();         
-      for (int c = b; c < strip.numPixels(); c += 3) {
-        int      hue   = firstPixelHue + c * 65536L / strip.numPixels();
-        uint32_t color = strip.gamma32(strip.ColorHSV(hue)); 
-        strip.setPixelColor(c, color); 
-      }
-      strip.show();                
-      delay(wait);                 
-      firstPixelHue += 65536 / 90; 
+void rainbowCycleslow(uint8_t wait) {
+  uint16_t r, j;
+
+  for(j=0; j<256*3; j++) { // 3 cycles of all colors on wheel
+    for(r=0; r< strip.numPixels(); r++) {
+      strip.setPixelColor(r, Wheel(((r * 256 / strip.numPixels()) + j) & 255));
     }
+    strip.show();
+    delay(wait);
+  }
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  if(WheelPos < 85) {
+   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  } else {
+   WheelPos -= 170;
+   return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
 }
