@@ -12,9 +12,6 @@ me.streamoff()
 me.streamon()
 me.takeoff()
 
-
-# connect to video stream
-#cap = cv2.VideoCapture(0)
 # define the AprilTags detector options
 # in the input image
 print("[INFO] detecting AprilTags...")
@@ -24,7 +21,6 @@ detector = apriltag.Detector(options)
 # loop over the frames from the video stream and detect the AprilTags
 while True:
 	# grab the current frame
-	#ret, image = cap.read()
 	image = me.get_frame_read().frame
 	image = cv2.resize(image, (320, 240))
 	# convert to gray scale 
