@@ -3,7 +3,7 @@ import cv2
 import cvzone
 from cvzone.PoseModule import PoseDetector
 
-detector = PoseDetector(upBody=True)
+detector = PoseDetector()
 
 # cap = cv2.VideoCapture(0)
 # _, img = cap.read()
