@@ -66,11 +66,11 @@ And then check you can see your files and create a new one:
    
 4. Copy all your data to an img file by using the dd command. 
 
-    `sudo dd if=/dev/mmcblk0 of=[mount point]/myimg.img bs=1M`
+    `sudo dd if=/dev/mmcblk0 of=/mnt/backup/myimg.img bs=1M`
 
     However, if you shrank a partition on the source microSD card, you’ll need to use the count attribute to tell it to copy only as many MBs as are in use. For example, in our case, we had had a 16GB card, but after shrinking the rootfs down to 6.5GB, the card only had about 6.8GB in use (when you count the /boot partition). So, to be on the safe side (better to copy too much data than too little), we rounded up and set dd to copy 7GB of data by using count=7000. The amount of data is equal to count * block size (bs) so 7000 * 1M means 7GB. 
 
-    `sudo dd if=/dev/mmcblk0 of=[mount point]/myimg.img bs=1M count=7000`
+    `sudo dd if=/dev/mmcblk0 of=/mnt/backup/myimg.img bs=1M count=7000`
 
 5. Use pishrink with the -z parameter, which zips your image up with gzip
 
