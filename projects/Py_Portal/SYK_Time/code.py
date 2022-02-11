@@ -42,7 +42,7 @@ LABEL_TIME_COLOR = 0x2a8eba
 cwd = ("/"+__file__).rsplit('/', 1)[0]
 
 # un-comment to set background image
-background = cwd+"/countdown_event.bmp"
+#background = cwd+"/countdown_event.bmp"
 
 # configure board and spi specifics
 esp32_cs = digitalio.DigitalInOut(board.ESP_CS)
@@ -72,7 +72,7 @@ pyportal = PyPortal(esp=esp,
 
 # set clock positions for each location
 kal_time = (40, 30)
-mahwah_time = (200, 30)
+amsterdam_time = (200, 30)
 sj_time = (40, 90)
 vancouver_time = (200, 90)
 freiburg_time = (40, 144)
