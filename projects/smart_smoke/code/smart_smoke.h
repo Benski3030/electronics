@@ -1,74 +1,128 @@
-#include <Wire.h>
-#include <Adafruit_MAX31855.h>
-#include <PID_v1.h>
+#include <Adafruit_MAX31856.h>
 #include <AccelStepper.h>
+#include <LiquidCrystal_I2C.h>
+#include <PID_v1.h>
 
-// Thermocouple
-#define THERMO_CLK_PIN 3
-#define THERMO_CS_PIN 4
-#define THERMO_DO_PIN 5
-Adafruit_MAX31855 thermocouple(THERMO_CLK_PIN, THERMO_CS_PIN, 
-THERMO_DO_PIN);
+// Constants
+const int desiredTemperature = 74;
+const int deadband = 1;
+const int stepsPerRevolution = 360;
+const int minStepperPosition = -43;
+const int maxStepperPosition = 43;
 
-// PID
-double setPoint = 220;
-double input, output;
-double kp = 2, ki = 5, kd = 1;
-PID myPID(&input, &output, &setPoint, kp, ki, kd, DIRECT);
+// Pin assignments
+#define pwmA 3
+#define pwmB 11
+#define brakeA 9
+#define brakeB 8
+#define dirA 12
+#define dirB 13
 
-// Stepper motor
-#define STEP_PIN 6
-#define DIR_PIN 7
-AccelStepper stepper(1, STEP_PIN, DIR_PIN);
+#define MotorInterfaceType 2
 
-// Gate control
-int gateStepSize = 10; // Adjust this value based on your specific setup
+// Initialize components
+Adafruit_MAX31856 maxthermo(4, 5, 6, 7);
+AccelStepper stepper(MotorInterfaceType, dirA, dirB);
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 
-// Stepper motor limits
-long stepperMinPos = 0;  // Minimum stepper position
-long stepperMaxPos = 200;  // Maximum stepper position
+// PID controller variables
+double inputTemperature, outputStepperPosition, setTemperature;
 
+// PID controller gains
+//double Kp = 0.1; // Proportional gain
+//double Ki = 0.1; // Integral gain
+//double Kd = 0.01; // Derivative gain
+
+// testing values
+double Kp = 1.0; // Proportional gain
+double Ki = 1.0; // Integral gain (increased from 0.05)
+double Kd = 0.5; // Derivative gain (increased from 0.01) 
+
+// Initialize PID controller
+PID myPID(&inputTemperature, &outputStepperPosition, &setTemperature, Kp, Ki, Kd, DIRECT);
+
+// Setup function
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  // Initialize and configure LCD
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(3, 0);
+  lcd.print("Smart Smoke!");
+  lcd.setCursor(2, 1);
+  // display the PID values used
+  lcd.print("PID:");
+  lcd.print(Kp);
+  lcd.print(Ki);
+  lcd.print(Kd);
   
-  // Initialize thermocouple
-  thermocouple.begin();
+  delay(5000);
+  while (!Serial) delay(100);
 
-  // Initialize PID
+
+  // Initialize and configure thermocouple
+  maxthermo.begin();
+  maxthermo.setThermocoupleType(MAX31856_TCTYPE_K);
+
+  // Initialize and configure stepper motor
+  pinMode(pwmA, OUTPUT);
+  pinMode(pwmB, OUTPUT);
+  pinMode(brakeA, OUTPUT);
+  pinMode(brakeB, OUTPUT);
+
+  digitalWrite(pwmA, HIGH);
+  digitalWrite(pwmB, HIGH);
+  digitalWrite(brakeA, LOW);
+  digitalWrite(brakeB, LOW);
+
+  stepper.setMaxSpeed(300);
+  stepper.setAcceleration(150);
+  stepper.setCurrentPosition(0);
+
+  // Clear the LCD
+  lcd.clear();
+
+  // Configure PID controller
+  setTemperature = desiredTemperature;
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-gateStepSize, gateStepSize);
-
-  // Initialize stepper motor
-  stepper.setMaxSpeed(500); // Set maximum stepper speed
-  stepper.setAcceleration(1000); // Set stepper acceleration
+  myPID.SetOutputLimits(minStepperPosition, maxStepperPosition);
 }
+
+void printTemperature(int temp) {
+  lcd.setCursor(0, 0);
+  lcd.print("Temp: ");
+  lcd.print(temp);
+  lcd.print(" F");
+}
+
+// Function to print stepper position on LCD
+void printStepperPosition(int pos) {
+  lcd.setCursor(0, 1);
+  lcd.print("Position: ");
+  lcd.print(pos);
+  lcd.print("   ");
+}
+
 
 void loop() {
-  // Read temperature in Fahrenheit
-  double tempC = thermocouple.readCelsius();
-  double tempF = tempC * 9.0 / 5.0 + 32.0;
-  input = tempF;
-  
-  // Compute PID output
+  // Read and print thermocouple temperature
+  int currentTemperature = (int)round(maxthermo.readThermocoupleTemperature() * 9.0 / 5.0 + 32.0);
+  printTemperature(currentTemperature);
+
+  inputTemperature = currentTemperature; // Assign the current temperature to inputTemperature for PID calculation
+
+  // Run the PID controller
   myPID.Compute();
 
-  // Control stepper motor based on PID output
-  if (output > 0 && stepper.currentPosition() > stepperMinPos) {
-    // Rotate stepper motor clockwise to close the gate
-    stepper.move(-output);
-  } else if (output < 0 && stepper.currentPosition() < stepperMaxPos) {
-    // Rotate stepper motor counter-clockwise to open the gate
-    stepper.move(-output);
-  }
+  // Move stepper to the calculated position
+  stepper.moveTo((int)outputStepperPosition);
 
-  // Execute stepper movement
-  stepper.run();
+  // Run the stepper motor
+  stepper.runToPosition();
 
-  // Print temperature and stepper position (optional)
-  Serial.print("Temperature: ");
-  Serial.print(tempF);
-  Serial.print("F | Stepper position: ");
-  Serial.println(stepper.currentPosition());
+  // Print stepper position on LCD
+  printStepperPosition(stepper.currentPosition());
+
+  // Add a delay for better temperature reading stability
   delay(1000);
 }
-
