@@ -1,4 +1,7 @@
 /* 
+Benjamin Harder
+5/17/23
+
 The code controls a SparkFun APDS-9960 proximity sensor and an Adafruit NeoPixel ring. 
 The proximity sensor is set up to detect proximity levels and trigger an interrupt when the proximity 
 level is too high or too low. When the interrupt is triggered, it reads the proximity level and 
@@ -22,7 +25,7 @@ interruptRoutine() updates a flag when an interrupt occurs.
 #define NUM_PIXELS 16
 
 //define constants
-#define PROX_INT_HIGH 150
+#define PROX_INT_HIGH 300
 #define PROX_INT_LOW 0
 const int BRUSH_TIME = 30000;
 int delay_time = (BRUSH_TIME / NUM_PIXELS) * 4; 
@@ -73,7 +76,8 @@ void setup() {
     Serial.println(F("Something went wrong during sensor init!"));
   }
 
-  //initialize pixel ring\n  pixels.begin();
+  //initialize pixel ring
+  pixels.begin();
   pixels.setBrightness(50);
   pixels.clear();
 }
@@ -81,7 +85,6 @@ void setup() {
 void loop() {
   // If interrupt occurs, print out the proximity level
   if (isr_flag == 1) {
-
     // Read proximity level and print it out
     if (!apds.readProximity(proximity_data)) {
       Serial.println("Error reading proximity value");
@@ -114,12 +117,12 @@ void loop() {
           pixels.setPixelColor(i, pixels.Color(0, 255, 0));
         }
         pixels.show();
-        delay(500);
+        delay(200);
         for (int i = 0; i < NUM_PIXELS; i++) {
           pixels.setPixelColor(i, pixels.Color(0, 0, 0));
         }
         pixels.show();
-        delay(500);
+        delay(200);
       }
       // Turn off all pixels.
       pixels.clear(); 
@@ -131,6 +134,7 @@ void loop() {
     }
   }
 }
+
 
 //fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
