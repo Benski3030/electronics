@@ -14,8 +14,11 @@ This code requires the `Adafruit NeoPixel` library,`Wire` library, and `SparkFun
 
 ### Harderware Requirements - BOM
 [Ardunino Nano](https://store-usa.arduino.cc/products/arduino-nano?selectedStore=us)
+
 [SparkFun APDS-9960 Proximity Sensor](https://www.sparkfun.com/products/12787)
+
 [Adafruit 16 NeoPixel Ring](https://www.adafruit.com/product/1463)
+
 [Voltaic 5v always on battery](https://voltaicsystems.com/v25/)
 
 
