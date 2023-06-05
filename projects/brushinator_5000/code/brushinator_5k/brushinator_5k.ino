@@ -1,47 +1,29 @@
-/* 
-Benjamin Harder
-5/17/23
-
-The code controls a SparkFun APDS-9960 proximity sensor and an Adafruit NeoPixel ring. 
-The proximity sensor is set up to detect proximity levels and trigger an interrupt when the proximity 
-level is too high or too low. When the interrupt is triggered, it reads the proximity level and 
-turns on all the pixels in the NeoPixel ring to blue. Then, it turns off one pixel at a time 
-in a clockwise direction until all the pixels are off. After that, the NeoPixel ring flashes 
-green five times before turning off all the pixels. 
-
-The function colorWipe() fills the pixels with a specified color, and the function 
-interruptRoutine() updates a flag when an interrupt occurs.
-*/
-
-//include required libraries
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include <SparkFun_APDS9960.h>
+#include <LowPower.h>  // Include Low Power library
 
-//define pins
+// Define pins and constants
 #define APDS9960_INT 2
-#define LED_PIN 13     
+#define LED_PIN 13
 #define PIXEL_PIN 6
 #define NUM_PIXELS 16
 
-//define constants
 #define PROX_INT_HIGH 300
 #define PROX_INT_LOW 0
 const int BRUSH_TIME = 30000;
-int delay_time = (BRUSH_TIME / NUM_PIXELS) * 4; 
+int delay_time = (BRUSH_TIME / NUM_PIXELS) * 4;
 
-//initialize variables
+// Initialize objects
 SparkFun_APDS9960 apds = SparkFun_APDS9960();
 uint8_t proximity_data = 0;
 int isr_flag = 0;
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_PIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
-  //set pins
   pinMode(LED_PIN, OUTPUT);
   pinMode(APDS9960_INT, INPUT);
 
-  //initialize serial and interrupt
   Serial.begin(9600);
   Serial.println();
   Serial.println(F("---------------------------------------"));
@@ -49,19 +31,16 @@ void setup() {
   Serial.println(F("---------------------------------------"));
   attachInterrupt(digitalPinToInterrupt(APDS9960_INT), interruptRoutine, FALLING);
 
-  //initialize apds-9960
-  if(apds.init()){
+  if (apds.init()) {
     Serial.println(F("APDS-9960 initialization complete"));
   } else {
     Serial.println(F("Something went wrong during APDS-9960 init!"));
   }
 
-  //adjust the proximity sensor gain
   if (!apds.setProximityGain(PGAIN_2X)) {
     Serial.println(F("Something went wrong trying to set PGAIN"));
   }
-  
-  //set proximity interrupt thresholds
+
   if (!apds.setProximityIntLowThreshold(PROX_INT_LOW)) {
     Serial.println(F("Error writing low threshold"));
   }
@@ -69,26 +48,24 @@ void setup() {
     Serial.println(F("Error writing high threshold"));
   }
 
-  // Start running the APDS-9960 proximity sensor (interrupts)
   if (apds.enableProximitySensor(true)) {
     Serial.println(F("Proximity sensor is now running"));
   } else {
     Serial.println(F("Something went wrong during sensor init!"));
   }
+  pinMode(LED_BUILTIN, OUTPUT); // Set the built-in LED pin as output
 
-  //initialize pixel ring
   pixels.begin();
-  pixels.setBrightness(50);
+  pixels.setBrightness(30);  // Lower brightness to save power
   pixels.clear();
 }
 
 void loop() {
-  // If interrupt occurs, print out the proximity level
   if (isr_flag == 1) {
-    // Read proximity level and print it out
     if (!apds.readProximity(proximity_data)) {
       Serial.println("Error reading proximity value");
     } else {
+
       Serial.print("Proximity detected! Level: ");
       Serial.println(proximity_data);
       // Turn all the pixels blue
@@ -96,7 +73,7 @@ void loop() {
         pixels.setPixelColor(i, pixels.Color(0, 0, 255));
       }
       pixels.show();
-      
+
       delay(1000);
 
       // Initialize countdown
@@ -125,27 +102,32 @@ void loop() {
         delay(200);
       }
       // Turn off all pixels.
-      pixels.clear(); 
+      pixels.clear();
     }
-    // Reset flag and clear APDS-9960 interrupt 
     isr_flag = 0;
     if (!apds.clearProximityInt()) {
       Serial.println("Error clearing interrupt");
     }
   }
+  // Let Arduino sleep and wake up every 8 seconds (or longer if suitable).
+  // Replace SLEEP_8S with SLEEP_15Ms, SLEEP_30MS, SLEEP_60MS, SLEEP_120MS, SLEEP_250MS, SLEEP_500MS, SLEEP_1S, SLEEP_2S, SLEEP_4S
+  // if you need shorter sleep period.
+  // Turn off the built-in LED before sleeping
+  digitalWrite(LED_BUILTIN, LOW);
+  Serial.println("Going to sleep now");
+  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+  // Turn on the built-in LED after waking up
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
-
-//fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<pixels.numPixels(); i++) {
+  for (uint16_t i = 0; i < pixels.numPixels(); i++) {
     pixels.setPixelColor(i, c);
   }
   pixels.show();
   delay(wait);
 }
 
-//update flag after an interrupt occurs
 void interruptRoutine() {
   isr_flag = 1;
 }
